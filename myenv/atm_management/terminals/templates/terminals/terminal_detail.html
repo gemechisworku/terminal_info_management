@@ -1,0 +1,33 @@
+{% extends 'base.html' %} {% block content %}
+<h1>{{ terminal.terminal_name }}</h1>
+<table class="table table-bordered">
+  <tr>
+    <th>Unit ID</th>
+    <td>{{ terminal.unit_id }}</td>
+  </tr>
+  <tr>
+    <th>Terminal ID</th>
+    <td>{{ terminal.terminal_id }}</td>
+  </tr>
+  <tr>
+    <th>Branch Name</th>
+    <td>{{ terminal.branch_name }}</td>
+  </tr>
+  <tr>
+    <th>Port</th>
+    <td>{{ terminal.port }}</td>
+  </tr>
+  <tr>
+    <th>IP</th>
+    <td>{{ terminal.ip }}</td>
+  </tr>
+  <tr>
+    <th>Location</th>
+    <td>{{ terminal.location }}</td>
+  </tr>
+</table>
+<a href="{% url 'terminal_edit' terminal.pk %}" class="btn btn-secondary"
+  >Edit</a
+>
+<a href="{% url 'terminal_list' %}" class="btn btn-primary">Back to list</a>
+{% endblock %}

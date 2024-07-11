@@ -1,0 +1,54 @@
+{% extends 'base.html' %} {% block content %} {% load crispy_forms_tags %}
+<div class="container mt-5">
+  <h1 class="mb-4">Edit Terminal</h1>
+  <form method="POST" class="needs-validation" novalidate>
+    {% csrf_token %}
+    <div class="row">
+      <div class="col-md-6">
+        <div class="form-group">
+          <!-- <label for="id_unit_id">Unit ID</label> -->
+          {{ form.unit_id|as_crispy_field }}
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group">
+          <!-- <label for="id_terminal_id">Terminal ID</label> -->
+          {{ form.terminal_id|as_crispy_field }}
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group">
+          <!-- <label for="id_terminal_name">Terminal Name</label> -->
+          {{ form.terminal_name|as_crispy_field }}
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group">
+          <!-- <label for="id_branch_name">Branch Name</label> -->
+          {{ form.branch_name|as_crispy_field }}
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group">
+          <!-- <label for="id_port">Port</label> -->
+          {{ form.port|as_crispy_field }}
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group">
+          <!-- <label for="id_ip">IP Address</label> -->
+          {{ form.ip|as_crispy_field }}
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group">
+          <!-- <label for="id_location">Location</label> -->
+          {{ form.location|as_crispy_field }}
+        </div>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a href="{% url 'terminal_list' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

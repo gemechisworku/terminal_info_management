@@ -1,0 +1,43 @@
+{% extends 'base.html' %} {% block content %}
+<h1>ATM Terminals</h1>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Unit ID</th>
+      <th>Terminal ID</th>
+      <th>Terminal Name</th>
+      <th>Branch Name</th>
+      <th>Port</th>
+      <th>IP</th>
+      <th>Location</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for terminal in terminals %}
+    <tr>
+      <td>{{ terminal.unit_id }}</td>
+      <td>{{ terminal.terminal_id }}</td>
+      <td>{{ terminal.terminal_name }}</td>
+      <td>{{ terminal.branch_name }}</td>
+      <td>{{ terminal.port }}</td>
+      <td>{{ terminal.ip }}</td>
+      <td>{{ terminal.location }}</td>
+      <td>
+        <a
+          href="{% url 'terminal_detail' terminal.pk %}"
+          class="btn btn-primary btn-sm"
+          >View</a
+        >
+        <a
+          href="{% url 'terminal_edit' terminal.pk %}"
+          class="btn btn-secondary btn-sm"
+          >Edit</a
+        >
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<a href="{% url 'terminal_new' %}" class="btn btn-success">Add New Terminal</a>
+{% endblock %}
