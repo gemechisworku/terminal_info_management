@@ -1,31 +1,408 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}ATM Management{% endblock %}</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Terminal Management{% endblock %}</title>
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        margin: 0;
+        height: 100vh;
+        overflow: hidden;
+      }
+      .navbar {
+        z-index: 1100;
+        width: 100%;
+      }
+      .sidebar {
+        height: calc(100vh - 56px); /* Adjusted to fit below the navbar */
+        width: 250px;
+        background-color: #343a40;
+        position: fixed;
+        top: 56px;
+        left: 0;
+        transition: all 0.3s ease-in-out;
+        z-index: 1000;
+        padding-top: 10px;
+      }
+      .sidebar.active {
+        width: 70px; /* Reduced width when collapsed */
+      }
+      .sidebar ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+      }
+      .sidebar ul li {
+        position: relative;
+      }
+      .sidebar ul li a {
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        text-decoration: none;
+      }
+      .sidebar ul li a i {
+        margin-right: 10px;
+      }
+      .sidebar ul li a span {
+        display: inline-block;
+        /* Hide text when sidebar is collapsed */
+        opacity: 1;
+        transition: opacity 0.3s ease-in-out;
+      }
+      .sidebar.active ul li a span {
+        opacity: 0;
+        /* Hide text when sidebar is collapsed */
+        width: 0;
+        overflow: hidden;
+      }
+      .sidebar ul li a:hover {
+        background-color: #495057;
+      }
+      .sidebar.active ul li a:hover::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: #495057;
+        color: #ffffff;
+        padding: 5px 10px;
+        border-radius: 3px;
+        white-space: nowrap;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+      }
+      .sidebar .dropdown-menu {
+        background-color: #6c757d; /* Different background color for submenus */
+        border: none;
+        position: absolute;
+        right: 100%;
+        top: 0;
+        width: 200px;
+        display: none;
+        z-index: 1001;
+      }
+      .sidebar .dropdown-menu a {
+        color: #ffffff;
+      }
+      .sidebar .dropdown-menu a:hover {
+        background-color: #495057;
+      }
+      .sidebar .dropdown-menu.show {
+        display: block;
+      }
+      .main-content {
+        flex-grow: 1;
+        margin-top: 20px; /* Height of the navbar */
+        margin-left: 200px;
+        padding: 20px;
+        transition: margin-left 0.3s ease-in-out;
+        display: flex;
+        justify-content: center;
+        /* align-items: center; */
+        /* Center content vertically and horizontally */
+      }
+      .main-content.collapsed {
+        margin-left: 70px; /* Adjusted margin for collapsed state */
+      }
+      .navbar-nav .dropdown-menu {
+        background-color: #343a40;
+        border: none;
+        right: 0; /* Align dropdown to the right edge */
+        left: auto; /* Override default left positioning */
+      }
+      .navbar-nav .dropdown-menu a {
+        color: #ffffff;
+      }
+      .navbar-nav .dropdown-menu a:hover {
+        background-color: #495057;
+      }
+      .navbar-toggler {
+        display: none;
+      }
+      .menu-icon {
+        cursor: pointer;
+        color: #ffffff;
+        margin-right: 15px;
+      }
+      .navbar-brand {
+        display: flex;
+        align-items: center;
+      }
+      .navbar-brand i {
+        margin-right: 10px;
+      }
+      @media (max-width: 768px) {
+        .sidebar {
+          width: 200px;
+        }
+        .main-content {
+          margin-left: 0;
+        }
+        .navbar-toggler {
+          display: block;
+        }
+      }
+
+      /* Ensure modal content is centered */
+      .modal-dialog {
+        margin: 1.75rem auto; /* Adjust the top and bottom margins */
+      }
+
+      /* Adjust the modal body padding to avoid overflow */
+      .modal-body {
+        padding: 1rem; /* Adjust padding as needed */
+      }
+
+      /* Ensure modal doesn't overflow the viewport */
+      .modal-content {
+        max-height: 100vh; /* Ensure the modal content fits within the viewport height */
+        overflow: auto; /* Add scroll if content overflows */
+      }
+
+      /* Optional: If you want to customize the modal header and footer */
+      .modal-header,
+      .modal-footer {
+        padding: 1rem; /* Adjust header and footer padding as needed */
+      }
+
+      /* Optional: Ensure modal dialog takes up available vertical space */
+      .modal-dialog {
+        display: flex;
+        align-items: center;
+        min-height: calc(
+          100% - 3.5rem
+        ); /* Adjust based on desired minimum height */
+      }
+
+      /* Ensure table headings do not wrap */
+      table th {
+        white-space: nowrap;
+        text-align: left; /* Optional: Center-align the text */
+      }
+
+      /* Add a bit of padding for better appearance */
+      table th {
+        padding: 10px;
+      }
+
+      /* Optional: Add padding to .main-content for better layout */
+      .main-content {
+        overflow-x: auto; /* Add horizontal scroll for large tables */
+        padding: 20px;
+      }
+    </style>
+  </head>
+  <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="{% url 'terminal_list' %}">ATM Management</a>
-        <div class="collapse navbar-collapse">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'terminal_list' %}">Terminals</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'terminal_new' %}">New Terminal</a>
-                </li>
-            </ul>
-        </div>
+      <a class="navbar-brand" href="#" id="sidebarToggle">
+        <i class="fas fa-bars menu-icon"></i>
+        <span>Terminal Management</span>
+      </a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNavDropdown"
+        aria-controls="navbarNavDropdown"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="accountDropdown"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              <i class="fas fa-user"></i> Account
+            </a>
+            <div class="dropdown-menu" aria-labelledby="accountDropdown">
+              <a class="dropdown-item" href="#">Update Profile</a>
+              <a class="dropdown-item" href="#">Change Password</a>
+              <a class="dropdown-item" href="#">Logout</a>
+            </div>
+          </li>
+        </ul>
+      </div>
     </nav>
-    <main role="main" class="container">
-        {% block content %}
-        {% endblock %}
-    </main>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <div class="sidebar">
+      <ul>
+        <li>
+          <a href="{% url 'dashboard' %}" data-tooltip="Dashboard"
+            ><i class="fas fa-tachometer-alt"></i><span> Dashboard</span></a
+          >
+        </li>
+        <li>
+          <a href="{% url 'port_assignment' %}" data-tooltip="Port Assignment"
+            ><i class="fas fa-cogs"></i><span> Port Assignment</span></a
+          >
+        </li>
+        <li>
+          <a href="{% url 'terminal_new' %}" data-tooltip="Add Terminal"
+            ><i class="fas fa-plus"></i><span> Add Terminal</span></a
+          >
+        </li>
+        <!-- Terminals Menu -->
+        <li class="dropdown">
+          <a
+            href="#"
+            class="dropdown-toggle"
+            data-tooltip="Terminals"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
+            <i class="fas fa-cogs"></i><span> Terminals</span>
+          </a>
+          <div class="dropdown-menu">
+            <a class="dropdown-item" href="{% url 'ncr_terminals' %}">NCR</a>
+            <a class="dropdown-item" href="{% url 'hitachi_crm_terminals' %}"
+              >Hitachi CRM</a
+            >
+            <a class="dropdown-item" href="{% url 'pos_terminals' %}">POS</a>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div class="main-content">
+      <main role="main" class="container">
+        {% block content %} {% endblock %}
+      </main>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Sidebar toggle logic
+        document
+          .getElementById("sidebarToggle")
+          .addEventListener("click", function () {
+            document.querySelector(".sidebar").classList.toggle("active");
+            document
+              .querySelector(".main-content")
+              .classList.toggle("collapsed");
+          });
+
+        // Ensure dropdown for Terminals works and hides when clicking elsewhere
+        document
+          .querySelectorAll(".sidebar .dropdown-toggle")
+          .forEach((item) => {
+            item.addEventListener("click", function (event) {
+              event.preventDefault();
+              const nextElement = this.nextElementSibling;
+              document
+                .querySelectorAll(".sidebar .dropdown-menu")
+                .forEach((menu) => {
+                  if (menu !== nextElement) {
+                    menu.classList.remove("show");
+                  }
+                });
+              nextElement.classList.toggle("show");
+            });
+          });
+
+        // Hide the dropdown when clicking outside of the sidebar
+        document.addEventListener("click", function (event) {
+          if (!document.querySelector(".sidebar").contains(event.target)) {
+            document
+              .querySelectorAll(".sidebar .dropdown-menu")
+              .forEach((menu) => {
+                menu.classList.remove("show");
+              });
+          }
+        });
+      });
+
+      $(document).ready(function () {
+        $(".edit-btn").on("click", function () {
+          // Populate the modal with the terminal's data
+          const $btn = $(this);
+          $("#editTerminalModal #terminal_id").val($btn.data("id"));
+          $("#editTerminalModal #unit_id").val($btn.data("unit-id"));
+          $("#editTerminalModal #terminal_id_input").val(
+            $btn.data("terminal-id")
+          );
+          $("#editTerminalModal #terminal_name").val(
+            $btn.data("terminal-name")
+          );
+          $("#editTerminalModal #branch_name").val($btn.data("branch-name"));
+          $("#editTerminalModal #port").val($btn.data("port"));
+          $("#editTerminalModal #ip").val($btn.data("ip"));
+          $("#editTerminalModal #location").val($btn.data("location"));
+          $("#editTerminalModal #type").val($btn.data("type"));
+          $("#editTerminalModal #status").val($btn.data("status"));
+
+          $("#editTerminalModal").modal("show");
+        });
+
+        $("#editTerminalForm").on("submit", function (event) {
+          event.preventDefault();
+          $.ajax({
+            type: "POST",
+            url: '{% url "terminal_edit" 0 %}'.replace(
+              "0",
+              $("#editTerminalModal #terminal_id").val()
+            ),
+            data: $(this).serialize(),
+            success: function (response) {
+              if (response.success) {
+                $("#editTerminalModal").modal("hide");
+                $("#editTerminalModal").modal("hide");
+                $("#successMessage").text("Changes saved successfully.");
+                $("#successModal").modal("show");
+                // Reload the page after the success modal is hidden
+                $("#successModal").on("hidden.bs.modal", function () {
+                  location.reload(); // Reload the page to see the changes
+                });
+              } else {
+                // Disable the bottom modal while the top modal is active
+                $("#errorModal").modal("show");
+                $("#editTerminalModal").modal("hide");
+
+                // Display error messages in the modal
+                $("#errorMessage").text(
+                  "There was an error. Please check the form and try again."
+                );
+              }
+            },
+            error: function () {
+              // Disable the bottom modal while the top modal is active
+              $("#errorModal").modal("show");
+              $("#editTerminalModal").modal("hide");
+
+              $("#errorMessage").text(
+                "There was an error processing the request."
+              );
+            },
+          });
+        });
+
+        $("#errorModal").on("hidden.bs.modal", function () {
+          // Re-enable the edit terminal modal when the error modal is hidden
+          $("#editTerminalModal").modal("show");
+        });
+      });
+    </script>
+  </body>
 </html>

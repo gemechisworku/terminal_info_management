@@ -6,9 +6,11 @@ from .models import Terminal
 class TerminalForm(forms.ModelForm):
     class Meta:
         model = Terminal
-        fields = ['unit_id', 'terminal_id', 'terminal_name', 'branch_name', 'port', 'ip', 'location']
+        fields = ['unit_id', 'terminal_id', 'terminal_name', 'branch_name', 'port', 'ip', 'location', 'type', 'status']
         widgets = {
             'location': forms.Select(choices=[('Onsite', 'Onsite'), ('Offsite', 'Offsite')]),
+            'type': forms.Select(choices=[('NCR', 'NCR'), ('Hitachi CRM', 'Hitachi CRM'), ("POS", "POS")]),
+            'status': forms.Select(choices=[('Operational', 'Operational'), ('Relocated', 'Relocated'), ("Installation Ready", "Installation Ready"), ("Not Operational", "Not Operational")]),
         }
 
     def __init__(self, *args, **kwargs):

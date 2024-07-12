@@ -46,6 +46,19 @@
           {{ form.location|as_crispy_field }}
         </div>
       </div>
+
+      <div class="col-md-6">
+        <div class="form-group">
+          <!-- <label for="id_location">Location</label> -->
+          {{ form.type|as_crispy_field }}
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group">
+          <!-- <label for="id_location">Location</label> -->
+          {{ form.status|as_crispy_field }}
+        </div>
+      </div>
     </div>
     <button type="submit" class="btn btn-primary">Save</button>
     <a href="{% url 'terminal_list' %}" class="btn btn-secondary">Cancel</a>

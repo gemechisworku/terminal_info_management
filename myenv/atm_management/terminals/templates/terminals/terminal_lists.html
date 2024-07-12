@@ -1,0 +1,287 @@
+{% extends 'base.html' %} {% block title %}{{ title }} Terminals{% endblock %}
+{% block content %}
+<h1>{{ title }} Terminals</h1>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Unit ID</th>
+      <th>Terminal ID</th>
+      <th>Terminal Name</th>
+      <th>Branch Name</th>
+      <th>Port</th>
+      <th>IP</th>
+      <th>Location</th>
+      <th>Terminal Type</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for terminal in terminals %}
+    <tr>
+      <td>{{ terminal.unit_id }}</td>
+      <td>{{ terminal.terminal_id }}</td>
+      <td>{{ terminal.terminal_name }}</td>
+      <td>{{ terminal.branch_name }}</td>
+      <td>{{ terminal.port }}</td>
+      <td>{{ terminal.ip }}</td>
+      <td>{{ terminal.location }}</td>
+      <td>{{ terminal.type }}</td>
+      <td>{{ terminal.status }}</td>
+      <td>
+        <!-- Trigger the modal for editing -->
+        <button
+          data-id="{{ terminal.pk }}"
+          data-unit-id="{{ terminal.unit_id }}"
+          data-terminal-id="{{ terminal.terminal_id }}"
+          data-terminal-name="{{ terminal.terminal_name }}"
+          data-branch-name="{{ terminal.branch_name }}"
+          data-port="{{ terminal.port }}"
+          data-ip="{{ terminal.ip }}"
+          data-location="{{ terminal.location }}"
+          data-type="{{ terminal.type }}"
+          data-status="{{ terminal.status }}"
+          class="btn btn-secondary btn-sm edit-btn"
+        >
+          Edit
+        </button>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="10" class="text-center">
+        No {{ title }} terminals available.
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<a href="{% url 'terminal_new' %}" class="btn btn-success">Add New Terminal</a>
+
+<!-- Edit Terminal Modal -->
+<div
+  class="modal fade"
+  id="editTerminalModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="editTerminalModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editTerminalModalLabel">Edit Terminal</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form
+          id="editTerminalForm"
+          method="POST"
+          class="needs-validation"
+          novalidate
+        >
+          {% csrf_token %}
+          <input type="hidden" id="terminal_id" name="terminal_id" value="" />
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="id_unit_id">Unit ID</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="unit_id"
+                  name="unit_id"
+                  required
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="id_terminal_id">Terminal ID</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="terminal_id_input"
+                  name="terminal_id"
+                  required
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="id_terminal_name">Terminal Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="terminal_name"
+                  name="terminal_name"
+                  required
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="id_branch_name">Branch Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="branch_name"
+                  name="branch_name"
+                  required
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="id_port">Port</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="port"
+                  name="port"
+                  required
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="id_ip">IP Address</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="ip"
+                  name="ip"
+                  required
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="id_location">Location</label>
+                <select
+                  class="form-control"
+                  id="location"
+                  name="location"
+                  required
+                >
+                  <option value="">Select Location</option>
+                  <option value="Onsite">Onsite</option>
+                  <option value="Offsite">Offsite</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="id_type">Terminal Type</label>
+                <select class="form-control" id="type" name="type" required>
+                  <option value="">Select Type</option>
+                  <option value="NCR">NCR</option>
+                  <option value="Hitachi CRM">Hitachi CRM</option>
+                  <option value="POS">POS</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="id_status">Terminal Status</label>
+                <select class="form-control" id="status" name="status" required>
+                  <option value="">Select Status</option>
+                  <option value="Operational">Operational</option>
+                  <option value="Relocated">Relocated</option>
+                  <option value="Installation Ready">Installation Ready</option>
+                  <option value="Not Operational">Not Operational</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Error Modal -->
+<div
+  class="modal fade"
+  id="errorModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="errorModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="errorModalLabel">Error</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="errorMessage" style="color: red">
+          <!-- Error message will be injected here -->
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div
+  class="modal fade"
+  id="successModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="successModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="successModalLabel">Success</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="successMessage">
+          <!-- Success message will be injected here -->
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-dismiss="modal"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
