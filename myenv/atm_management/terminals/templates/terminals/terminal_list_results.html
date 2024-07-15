@@ -1,0 +1,35 @@
+{% for terminal in terminals %}
+<tr>
+  <td>{{ terminal.unit_id }}</td>
+  <td>{{ terminal.terminal_id }}</td>
+  <td>{{ terminal.terminal_name }}</td>
+  <td>{{ terminal.branch_name }}</td>
+  <td>{{ terminal.port }}</td>
+  <td>{{ terminal.ip }}</td>
+  <td>{{ terminal.location }}</td>
+  <td>{{ terminal.type }}</td>
+  <td>{{ terminal.status }}</td>
+  <td>
+    <!-- Trigger the modal for editing -->
+    <button
+      data-id="{{ terminal.pk }}"
+      data-unit-id="{{ terminal.unit_id }}"
+      data-terminal-id="{{ terminal.terminal_id }}"
+      data-terminal-name="{{ terminal.terminal_name }}"
+      data-branch-name="{{ terminal.branch_name }}"
+      data-port="{{ terminal.port }}"
+      data-ip="{{ terminal.ip }}"
+      data-location="{{ terminal.location }}"
+      data-type="{{ terminal.type }}"
+      data-status="{{ terminal.status }}"
+      class="btn btn-secondary btn-sm edit-btn"
+    >
+      Edit
+    </button>
+  </td>
+</tr>
+{% empty %}
+<tr>
+  <td colspan="10" class="text-center">No {{ title }} terminals available.</td>
+</tr>
+{% endfor %}

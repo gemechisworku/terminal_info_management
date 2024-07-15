@@ -1,16 +1,48 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Terminal
 from .forms import TerminalForm
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator
+from django.db.models import Q
 
 def terminal_list(request):
-    terminals = Terminal.objects.all()
-    return render(request, 'terminals/terminal_lists.html', {'terminals': terminals})
+    sort_by = request.GET.get('sort_by', 'unit_id')  # Default sort by unit_id if no parameter is provided
+    search_query = request.GET.get('search', '')  # Get the search query from the request
 
-def terminal_detail(request, pk):
-    terminal = get_object_or_404(Terminal, pk=pk)
-    return render(request, 'terminals/terminal_detail.html', {'terminal': terminal})
+    valid_sort_fields = ['unit_id', 'terminal_id', 'terminal_name', 'branch_name', 'port', 'location', 'status']
+    if sort_by not in valid_sort_fields:
+        sort_by = 'unit_id'  # Default to unit_id if invalid sort_by value is provided
+
+    terminals = Terminal.objects.all().order_by(sort_by)
+
+    if search_query:
+        terminals = terminals.filter(
+            Q(unit_id__icontains=search_query) |
+            Q(terminal_id__icontains=search_query) |
+            Q(terminal_name__icontains=search_query) |
+            Q(branch_name__icontains=search_query) |
+            Q(port__icontains=search_query) |
+            Q(ip__icontains=search_query) |
+            Q(location__icontains=search_query) |
+            Q(status__icontains=search_query)
+        )
+
+    paginator = Paginator(terminals, 3)  # Show 10 terminals per page
+    page_number = request.GET.get('page')
+    terminals = paginator.get_page(page_number)
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return render(request, 'terminals/terminal_list_results.html', {
+        'terminals': terminals,
+    })
+
+    return render(request, 'terminals/terminal_lists.html', {
+        'terminals': terminals,
+        'sort_by': sort_by,
+        'search_query': search_query,
+    })
+
 
 def terminal_new(request):
     if request.method == "POST":
@@ -59,8 +91,42 @@ def accounts(request):
     return render(request, 'terminals/accounts.html')
 
 def terminal_list_by_type(request, terminal_type):
-    terminals = Terminal.objects.filter(type=terminal_type)
-    return render(request, 'terminals/terminal_lists.html', {'terminals': terminals, 'title': terminal_type})
+    sort_by = request.GET.get('sort_by', 'unit_id')  # Default sort by unit_id if no parameter is provided
+    search_query = request.GET.get('search', '')  # Get the search query from the request
+
+    valid_sort_fields = ['unit_id', 'terminal_id', 'terminal_name', 'branch_name', 'port', 'location', 'status']
+    if sort_by not in valid_sort_fields:
+        sort_by = 'unit_id'  # Default to unit_id if invalid sort_by value is provided
+
+    terminals = Terminal.objects.all().filter(type=terminal_type).order_by(sort_by)
+
+    if search_query:
+        terminals = terminals.filter(
+            Q(unit_id__icontains=search_query) |
+            Q(terminal_id__icontains=search_query) |
+            Q(terminal_name__icontains=search_query) |
+            Q(branch_name__icontains=search_query) |
+            Q(port__icontains=search_query) |
+            Q(ip__icontains=search_query) |
+            Q(location__icontains=search_query) |
+            Q(status__icontains=search_query)
+        )
+
+    paginator = Paginator(terminals, 3)  # Show 10 terminals per page
+    page_number = request.GET.get('page')
+    terminals = paginator.get_page(page_number)
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return render(request, 'terminals/terminal_list_results.html', {
+        'terminals': terminals,
+    })
+
+    return render(request, 'terminals/terminal_lists.html', {
+        'terminals': terminals,
+        'sort_by': sort_by,
+        'search_query': search_query,
+    })
+    
 
 def hitachi_crm_terminals(request):
     return terminal_list_by_type(request, 'Hitachi CRM')

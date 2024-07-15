@@ -294,6 +294,44 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.querySelector('input[name="search"]');
+        const sortSelect = document.getElementById("sortOptions");
+
+        function fetchResults(searchQuery, sortBy) {
+          const urlParams = new URLSearchParams();
+          urlParams.set("search", searchQuery);
+          urlParams.set("sort_by", sortBy);
+
+          fetch(`/terminals/?${urlParams.toString()}`, {
+            headers: {
+              "x-requested-with": "XMLHttpRequest",
+            },
+          })
+            .then((response) => response.text())
+            .then((data) => {
+              document.getElementById("results").innerHTML = data;
+            })
+            .catch((error) =>
+              console.error("Error fetching search results:", error)
+            );
+        }
+
+        searchInput.addEventListener("input", function () {
+          const searchQuery = searchInput.value;
+          const sortBy = sortSelect.value;
+          fetchResults(searchQuery, sortBy);
+        });
+
+        sortSelect.addEventListener("change", function () {
+          const searchQuery = searchInput.value;
+          const sortBy = sortSelect.value;
+          fetchResults(searchQuery, sortBy);
+        });
+      });
+    </script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
         // Sidebar toggle logic
         document
           .getElementById("sidebarToggle")

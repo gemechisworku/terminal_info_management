@@ -1,6 +1,28 @@
 {% extends 'base.html' %} {% block title %}{{ title }} Terminals{% endblock %}
 {% block content %}
-<h1>{{ title }} Terminals</h1>
+
+<hr>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="mr-3">{{ title }} Terminals</h1>
+  <form method="GET" action="" class="form-inline mr-3 flex-grow-1" id="searchForm">
+    <input type="text" name="search" id="searchInput" class="form-control w-100" placeholder="Search Terminals" value="{{ search_query }}">
+    <!-- <button type="submit" class="btn btn-primary">Search</button> -->
+  </form>
+  <div class="d-flex align-items-center">
+    
+    
+      <label for="sortOptions" class="mr-2 mb-0">Sort by:</label>
+      <select id="sortOptions" class="form-control" style="width: auto; display: inline-block;" onchange="sortTerminals()">
+          <option value="unit_id" {% if sort_by == "unit_id" %}selected{% endif %}>Unit ID</option>
+          <option value="terminal_id" {% if sort_by == "terminal_id" %}selected{% endif %}>Terminal ID</option>
+          <option value="terminal_name" {% if sort_by == "terminal_name" %}selected{% endif %}>Terminal Name</option>
+          <option value="branch_name" {% if sort_by == "branch_name" %}selected{% endif %}>Branch Name</option>
+          <option value="location" {% if sort_by == "location" %}selected{% endif %}>Location</option>
+          <option value="port" {% if sort_by == "port" %}selected{% endif %}>Port</option>
+          <option value="status" {% if sort_by == "status" %}selected{% endif %}>Status</option>
+      </select>
+  </div>
+</div>
 <table class="table table-striped">
   <thead>
     <tr>
@@ -16,47 +38,12 @@
       <th>Actions</th>
     </tr>
   </thead>
-  <tbody>
-    {% for terminal in terminals %}
-    <tr>
-      <td>{{ terminal.unit_id }}</td>
-      <td>{{ terminal.terminal_id }}</td>
-      <td>{{ terminal.terminal_name }}</td>
-      <td>{{ terminal.branch_name }}</td>
-      <td>{{ terminal.port }}</td>
-      <td>{{ terminal.ip }}</td>
-      <td>{{ terminal.location }}</td>
-      <td>{{ terminal.type }}</td>
-      <td>{{ terminal.status }}</td>
-      <td>
-        <!-- Trigger the modal for editing -->
-        <button
-          data-id="{{ terminal.pk }}"
-          data-unit-id="{{ terminal.unit_id }}"
-          data-terminal-id="{{ terminal.terminal_id }}"
-          data-terminal-name="{{ terminal.terminal_name }}"
-          data-branch-name="{{ terminal.branch_name }}"
-          data-port="{{ terminal.port }}"
-          data-ip="{{ terminal.ip }}"
-          data-location="{{ terminal.location }}"
-          data-type="{{ terminal.type }}"
-          data-status="{{ terminal.status }}"
-          class="btn btn-secondary btn-sm edit-btn"
-        >
-          Edit
-        </button>
-      </td>
-    </tr>
-    {% empty %}
-    <tr>
-      <td colspan="10" class="text-center">
-        No {{ title }} terminals available.
-      </td>
-    </tr>
-    {% endfor %}
+  <tbody id="results">
+    {% include 'terminals/terminal_list_results.html' %}
   </tbody>
 </table>
-<a href="{% url 'terminal_new' %}" class="btn btn-success">Add New Terminal</a>
+<hr>
+
 
 <!-- Edit Terminal Modal -->
 <div
@@ -94,7 +81,8 @@
               <div class="form-group">
                 <label for="id_unit_id">Unit ID</label>
                 <input
-                  type="text"
+                  type="number"
+                  maxlength="3"
                   class="form-control"
                   id="unit_id"
                   name="unit_id"
@@ -208,6 +196,57 @@
   </div>
 </div>
 
+
+<!-- Pagination Controls -->
+<div class="d-flex justify-content-between align-items-center">
+  <div>
+    <ul class="pagination">
+      {% if terminals.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?sort_by={{ sort_by }}&page=1" aria-label="First">
+          <span aria-hidden="true">&laquo;&laquo;</span>
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?sort_by={{ sort_by }}&page={{ terminals.previous_page_number }}" aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+      {% endif %}
+
+      {% for num in terminals.paginator.page_range %}
+        {% if num == terminals.number %}
+        <li class="page-item active">
+          <span class="page-link">{{ num }} <span class="sr-only">(current)</span></span>
+        </li>
+        {% else %}
+        <li class="page-item">
+          <a class="page-link" href="?sort_by={{ sort_by }}&page={{ num }}">{{ num }}</a>
+        </li>
+        {% endif %}
+      {% endfor %}
+
+      {% if terminals.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?sort_by={{ sort_by }}&page={{ terminals.next_page_number }}" aria-label="Next">
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?sort_by={{ sort_by }}&page={{ terminals.paginator.num_pages }}" aria-label="Last">
+          <span aria-hidden="true">&raquo;&raquo;</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </div>
+  <div>
+    <span>Page {{ terminals.number }} of {{ terminals.paginator.num_pages }}</span>
+  </div>
+</div>
+
+
+
 <!-- Error Modal -->
 <div
   class="modal fade"
@@ -272,11 +311,7 @@
         </p>
       </div>
       <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          data-dismiss="modal"
-        >
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
           Close
         </button>
       </div>
