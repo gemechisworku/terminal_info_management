@@ -6,6 +6,54 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
 from django.db.models import Q
 
+import pandas as pd
+from django.shortcuts import render, redirect
+from django.core.files.storage import FileSystemStorage
+
+def upload_terminal_excel(request):
+    if request.method == 'POST' and request.FILES['file']:
+        excel_file = request.FILES['file']
+        fs = FileSystemStorage()
+        filename = fs.save(excel_file.name, excel_file)
+        file_path = fs.path(filename)
+
+        # Read the Excel file using pandas
+        df = pd.read_excel(file_path)
+        
+        # Convert the DataFrame to a list of dictionaries
+        terminals = df.to_dict(orient='records')
+
+        # Store the terminals in the session
+        request.session['terminals'] = terminals
+
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+def review_terminals(request):
+    terminals = request.session.get('terminals', [])
+    return render(request, 'terminals/review_terminals.html', {'terminals': terminals})
+
+def submit_terminals(request):
+    if request.method == 'POST':
+        terminals = request.session.get('terminals', [])
+        for terminal in terminals:
+            Terminal.objects.create(
+                unit_id=terminal.get('unit_id'),
+                terminal_id=terminal.get('terminal_id'),
+                terminal_name=terminal.get('terminal_name'),
+                branch_name=terminal.get('branch_name'),
+                port=terminal.get('port'),
+                ip=terminal.get('ip'),
+                location=terminal.get('location'),
+                type=terminal.get('type'),
+                status=terminal.get('status')
+            )
+        
+        # Clear the session data after submission
+        request.session['terminals'] = []
+        return redirect('terminal_list')
+    return redirect('review_terminals')
+
 def terminal_list(request):
     sort_by = request.GET.get('sort_by', 'unit_id')  # Default sort by unit_id if no parameter is provided
     search_query = request.GET.get('search', '')  # Get the search query from the request
@@ -15,7 +63,7 @@ def terminal_list(request):
         sort_by = 'unit_id'  # Default to unit_id if invalid sort_by value is provided
 
     terminals = Terminal.objects.all().order_by(sort_by)
-
+    print(f'all terminals--------: {terminals}')
     if search_query:
         terminals = terminals.filter(
             Q(unit_id__icontains=search_query) |
@@ -28,7 +76,7 @@ def terminal_list(request):
             Q(status__icontains=search_query)
         )
 
-    paginator = Paginator(terminals, 3)  # Show 10 terminals per page
+    paginator = Paginator(terminals, 10)  # Show 10 terminals per page
     page_number = request.GET.get('page')
     terminals = paginator.get_page(page_number)
 
@@ -98,10 +146,10 @@ def terminal_list_by_type(request, terminal_type):
     if sort_by not in valid_sort_fields:
         sort_by = 'unit_id'  # Default to unit_id if invalid sort_by value is provided
 
-    terminals = Terminal.objects.all().filter(type=terminal_type).order_by(sort_by)
-
+    filtered_terminals = Terminal.objects.all().filter(type=terminal_type).order_by(sort_by)
+    print(f'list_by_type----------: {filtered_terminals}')
     if search_query:
-        terminals = terminals.filter(
+        filtered_terminals = filtered_terminals.filter(
             Q(unit_id__icontains=search_query) |
             Q(terminal_id__icontains=search_query) |
             Q(terminal_name__icontains=search_query) |
@@ -112,18 +160,19 @@ def terminal_list_by_type(request, terminal_type):
             Q(status__icontains=search_query)
         )
 
-    paginator = Paginator(terminals, 3)  # Show 10 terminals per page
+    paginator = Paginator(filtered_terminals, 10)  # Show 10 terminals per page
     page_number = request.GET.get('page')
-    terminals = paginator.get_page(page_number)
+    filtered_terminals = paginator.get_page(page_number)
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return render(request, 'terminals/terminal_list_results.html', {
-        'terminals': terminals,
+        'terminals': filtered_terminals,
     })
 
     return render(request, 'terminals/terminal_lists.html', {
-        'terminals': terminals,
+        'terminals': filtered_terminals,
         'sort_by': sort_by,
+        'title': terminal_type,
         'search_query': search_query,
     })
     

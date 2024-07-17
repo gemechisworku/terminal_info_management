@@ -301,8 +301,13 @@
           const urlParams = new URLSearchParams();
           urlParams.set("search", searchQuery);
           urlParams.set("sort_by", sortBy);
+          const terminalType = "{{ terminal_type|default:'' }}"; // Ensure terminal_type is available
 
-          fetch(`/terminals/?${urlParams.toString()}`, {
+          const fetchUrl = terminalType
+            ? `/terminals/${terminalType.toLowerCase()}/?${urlParams.toString()}`
+            : `/terminals/?${urlParams.toString()}`;
+
+          fetch(fetchUrl, {
             headers: {
               "x-requested-with": "XMLHttpRequest",
             },
@@ -330,6 +335,7 @@
       });
     </script>
 
+  
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         // Sidebar toggle logic

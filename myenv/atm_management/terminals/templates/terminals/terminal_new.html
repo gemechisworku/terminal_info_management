@@ -1,67 +1,98 @@
 {% extends 'base.html' %} {% block content %} {% load crispy_forms_tags %}
 <div class="container mt-5">
-  <h1 class="mb-4">New Terminal</h1>
+  <hr />
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">New Terminal</h1>
+    <!-- Button to trigger the file input dialog, positioned on the right end -->
+    <button type="button" class="btn btn-info" id="importButton">
+      Import from Excel
+    </button>
+    <!-- Hidden file input -->
+    <input
+      type="file"
+      id="importFileInput"
+      accept=".xlsx, .xls"
+      style="display: none"
+    />
+  </div>
+  <hr />
   <form method="POST" class="needs-validation" novalidate>
     {% csrf_token %}
     <div class="row">
       <div class="col-md-6">
-        <div class="form-group">
-          <!-- <label for="id_unit_id">Unit ID</label> -->
-          {{ form.unit_id|as_crispy_field }}
-        </div>
+        <div class="form-group">{{ form.unit_id|as_crispy_field }}</div>
       </div>
       <div class="col-md-6">
-        <div class="form-group">
-          <!-- <label for="id_terminal_id">Terminal ID</label> -->
-          {{ form.terminal_id|as_crispy_field }}
-        </div>
+        <div class="form-group">{{ form.terminal_id|as_crispy_field }}</div>
       </div>
       <div class="col-md-6">
-        <div class="form-group">
-          <!-- <label for="id_terminal_name">Terminal Name</label> -->
-          {{ form.terminal_name|as_crispy_field }}
-        </div>
+        <div class="form-group">{{ form.terminal_name|as_crispy_field }}</div>
       </div>
       <div class="col-md-6">
-        <div class="form-group">
-          <!-- <label for="id_branch_name">Branch Name</label> -->
-          {{ form.branch_name|as_crispy_field }}
-        </div>
+        <div class="form-group">{{ form.branch_name|as_crispy_field }}</div>
       </div>
       <div class="col-md-6">
-        <div class="form-group">
-          <!-- <label for="id_port">Port</label> -->
-          {{ form.port|as_crispy_field }}
-        </div>
+        <div class="form-group">{{ form.port|as_crispy_field }}</div>
       </div>
       <div class="col-md-6">
-        <div class="form-group">
-          <!-- <label for="id_ip">IP Address</label> -->
-          {{ form.ip|as_crispy_field }}
-        </div>
+        <div class="form-group">{{ form.ip|as_crispy_field }}</div>
       </div>
       <div class="col-md-6">
-        <div class="form-group">
-          <!-- <label for="id_location">Location</label> -->
-          {{ form.location|as_crispy_field }}
-        </div>
-      </div>
-
-      <div class="col-md-6">
-        <div class="form-group">
-          <!-- <label for="id_location">Location</label> -->
-          {{ form.type|as_crispy_field }}
-        </div>
+        <div class="form-group">{{ form.location|as_crispy_field }}</div>
       </div>
       <div class="col-md-6">
-        <div class="form-group">
-          <!-- <label for="id_location">Location</label> -->
-          {{ form.status|as_crispy_field }}
-        </div>
+        <div class="form-group">{{ form.type|as_crispy_field }}</div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group">{{ form.status|as_crispy_field }}</div>
       </div>
     </div>
     <button type="submit" class="btn btn-primary">Save</button>
     <a href="{% url 'terminal_list' %}" class="btn btn-secondary">Cancel</a>
   </form>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const importButton = document.getElementById("importButton");
+    const importFileInput = document.getElementById("importFileInput");
+
+    importButton.addEventListener("click", function () {
+      importFileInput.click();
+    });
+
+    importFileInput.addEventListener("change", function () {
+      const formData = new FormData();
+      formData.append(
+        "csrfmiddlewaretoken",
+        document.querySelector('input[name="csrfmiddlewaretoken"]').value
+      );
+      formData.append("file", importFileInput.files[0]);
+
+      fetch("{% url 'upload_terminal_excel' %}", {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error("Network response was not ok.");
+          }
+        })
+        .then((data) => {
+          if (data.success) {
+            window.location.href = "{% url 'review_terminals' %}";
+          } else {
+            alert("An error occurred: " + (data.error || "Unknown error"));
+          }
+        })
+        .catch((error) => {
+          console.error("An error occurred:", error);
+          alert("An error occurred: " + error.message);
+        });
+    });
+  });
+</script>
+
 {% endblock %}

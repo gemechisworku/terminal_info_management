@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h1>Review Terminals</h1>
+  <hr />
+  <form method="POST" action="{% url 'submit_terminals' %}">
+    {% csrf_token %}
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Unit ID</th>
+          <th>Terminal ID</th>
+          <th>Terminal Name</th>
+          <th>Branch Name</th>
+          <th>Port</th>
+          <th>IP</th>
+          <th>Location</th>
+          <th>Type</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for terminal in terminals %}
+        <tr>
+          <td>{{ terminal.unit_id }}</td>
+          <td>{{ terminal.terminal_id }}</td>
+          <td>{{ terminal.terminal_name }}</td>
+          <td>{{ terminal.branch_name }}</td>
+          <td>{{ terminal.port }}</td>
+          <td>{{ terminal.ip }}</td>
+          <td>{{ terminal.location }}</td>
+          <td>{{ terminal.type }}</td>
+          <td>{{ terminal.status }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <button type="submit" class="btn btn-primary">Submit Terminals</button>
+    <a href="{% url 'terminal_new' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}
